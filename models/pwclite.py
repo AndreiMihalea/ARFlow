@@ -263,9 +263,16 @@ class PWCLite(nn.Module):
 
         res_dict = {}
         if n_frames == 2:
-            res_dict['flows_fw'] = self.forward_2_frames(x[0], x[1])
-            if with_bk:
-                res_dict['flows_bw'] = self.forward_2_frames(x[1], x[0])
+            x0_c1 = x[0].clone
+            x1_c1 = x[1].clone
+            x0_c2 = x[0].clone
+            x1_c2 = x[1].clone
+            for _ in range(5):
+                current_flow_fw = self.forward_2_frames(x0_c1, x1_c1)
+                print(current_flow_fw.shape)
+                res_dict['flows_fw'] += current_flow_fw
+                if with_bk:
+                    res_dict['flows_bw'] = self.forward_2_frames(x[1], x[0])
         elif n_frames == 3:
             flows_10, flows_12 = self.forward_3_frames(x[0], x[1], x[2])
             res_dict['flows_fw'], res_dict['flows_bw'] = flows_12, flows_10
